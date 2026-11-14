@@ -72,7 +72,7 @@ export class ServiceCachePool {
 }
 
 export class ServiceResolver extends ServiceProvider {
-  container = this.provider.container;
+  readonly container: Container;
 
   constructor(
     readonly provider: BasicServiceProvider,
@@ -80,6 +80,9 @@ export class ServiceResolver extends ServiceProvider {
     readonly stack: ServiceIdentifierValue[] = []
   ) {
     super();
+    // Do not write `container = this.provider.container` as a field initializer.
+    // SWC emits it before parameter properties are assigned, so provider is undefined at runtime.
+    this.container = provider.container;
   }
 
   getAllRaw(

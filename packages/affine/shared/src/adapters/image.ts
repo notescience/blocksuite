@@ -19,6 +19,7 @@ import {
   type Transformer,
 } from '@blocksuite/store';
 
+import { exceedsFileSizeLimit } from './file-size-limit.js';
 import { AdapterFactoryIdentifier } from './types/adapter';
 
 export type Image = File[];
@@ -95,6 +96,8 @@ export class ImageAdapter extends BaseAdapter<Image> {
     workspaceId,
   }: ImageToSliceSnapshotPayload): Promise<SliceSnapshot | null> {
     if (files.length === 0) return null;
+    // Skip registering the upload when over the limit, so snapshotToSlice does not insert image blocks.
+    if (exceedsFileSizeLimit(this.provider, files)) return null;
 
     const content: SliceSnapshot['content'] = [];
     const flavour = ImageBlockSchema.model.flavour;

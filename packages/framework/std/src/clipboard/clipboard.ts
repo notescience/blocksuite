@@ -12,6 +12,7 @@ import { unified } from 'unified';
 
 import { LifeCycleWatcher } from '../extension/index.js';
 import { ClipboardAdapterConfigIdentifier } from './clipboard-adapter.js';
+import { FallbackServiceProvider } from './fallback-provider.js';
 import { onlyContainImgElement } from './utils.js';
 
 export class Clipboard extends LifeCycleWatcher {
@@ -93,7 +94,7 @@ export class Clipboard extends LifeCycleWatcher {
       }
       if (item) {
         const job = this._getJob();
-        const adapterInstance = new adapter(job, this.std.store.provider);
+        const adapterInstance = new adapter(job, this._getAdapterProvider());
         const payload = {
           file: item,
           assets: job.assetsManager,
@@ -236,6 +237,17 @@ export class Clipboard extends LifeCycleWatcher {
       return;
     }
     return result.file;
+  }
+
+  /**
+   * Provider used by paste adapters: store first, std as fallback.
+   * Adapters must read FileSizeLimitProvider from std without dropping matchers registered on the store.
+   */
+  private _getAdapterProvider() {
+    return new FallbackServiceProvider(
+      this.std.store.provider,
+      this.std.provider
+    );
   }
 
   private _getJob() {

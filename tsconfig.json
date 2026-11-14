@@ -20,7 +20,8 @@
 
     // Emit
     "lib": ["esnext", "dom", "dom.iterable"],
-    "target": "esnext",
+    // esnext emits accessor fields as-is, which Chrome and Vite pre-bundling reject as Unexpected identifier.
+    "target": "ES2022",
     "useDefineForClassFields": false,
     "declaration": true,
     "declarationMap": true,

@@ -75,9 +75,15 @@ export class DataViewRootUILogic {
 
     return new (logic(view))(this, view);
   }
-  private readonly views$ = cacheComputed(this.viewManager.views$, viewId =>
-    this.createDataViewUILogic(viewId)
-  );
+  /**
+   * Must not initialize from a class field: esbuild/Vite keep native class
+   * fields, which run before the constructor assigns `config`. Accessing
+   * `this.viewManager` there throws `Cannot read properties of undefined
+   * (reading 'dataSource')`.
+   */
+  private readonly views$: ReturnType<
+    typeof cacheComputed<DataViewUILogicBase>
+  >;
   private readonly viewsMap$ = computed(() => {
     return Object.fromEntries(
       this.views$.list.value.map(logic => [logic.view.id, logic])
@@ -93,7 +99,11 @@ export class DataViewRootUILogic {
     this.config.setSelection(selection);
   }
 
-  constructor(public readonly config: DataViewRendererConfig) {}
+  constructor(public readonly config: DataViewRendererConfig) {
+    this.views$ = cacheComputed(this.viewManager.views$, viewId =>
+      this.createDataViewUILogic(viewId)
+    );
+  }
 
   get dataViewRenderer() {
     return this._uiRef.value;

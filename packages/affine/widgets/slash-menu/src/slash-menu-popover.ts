@@ -108,7 +108,14 @@ export class SlashMenu extends WithDisposable(LitElement) {
 
   private _queryState: 'off' | 'on' | 'no_result' = 'off';
 
-  private readonly _startRange = this.inlineEditor.getInlineRange();
+  /**
+   * Do not write `= this.inlineEditor.getInlineRange()`.
+   * This class has accessors. When SWC bundles it, field initializers run before
+   * constructor parameter properties. Read the range from the parameter inside the constructor.
+   */
+  private readonly _startRange: ReturnType<
+    AffineInlineEditor['getInlineRange']
+  >;
 
   private readonly _updateFilteredItems = () => {
     const query = this._query;
@@ -179,6 +186,7 @@ export class SlashMenu extends WithDisposable(LitElement) {
     private readonly abortController = new AbortController()
   ) {
     super();
+    this._startRange = inlineEditor.getInlineRange();
   }
 
   override connectedCallback() {

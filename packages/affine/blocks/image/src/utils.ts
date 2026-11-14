@@ -7,6 +7,7 @@ import {
   ImageBlockSchema,
 } from '@blocksuite/affine-model';
 import {
+  checkFileSizeExceeded,
   FileSizeLimitProvider,
   NativeClipboardProvider,
 } from '@blocksuite/affine-shared/services';
@@ -215,16 +216,13 @@ export function shouldResizeImage(node: Node, target: EventTarget | null) {
 function hasExceeded(
   std: BlockStdScope,
   files: File[],
-  maxFileSize = std.get(FileSizeLimitProvider).maxFileSize
+  limit = std.get(FileSizeLimitProvider)
 ) {
-  const exceeded = files.some(file => file.size > maxFileSize);
-
-  if (exceeded) {
+  // Use onOverFileSize when set (for example the quota dialog); otherwise fall back to a toast.
+  return checkFileSizeExceeded(limit, files, maxFileSize => {
     const size = formatSize(maxFileSize);
     toast(std.host, `You can only upload files less than ${size}`);
-  }
-
-  return exceeded;
+  });
 }
 
 async function buildPropsWith(std: BlockStdScope, file: File) {
